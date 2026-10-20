@@ -1,6 +1,6 @@
 {
-  "name": "Telos — Cartography of Meaning & Purpose",
-  "description": "An interactive philosophical observatory deconstructing the foundational questions of existence, hidden assumptions, and major worldviews.",
+  "name": "Telos — Question Atlas of Human Inquiry",
+  "description": "An epistemic cartography engine mapping the hidden assumptions, historical lineages, topological neighbors, and root knots of human questioning.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

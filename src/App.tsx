@@ -4,31 +4,35 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { ATLAS_QUESTIONS, QuestionNode } from './data/questionAtlasData.ts';
+import { findAtlasQuestion } from './utils/philosophyLogic.ts';
 import { Navbar } from './components/Navbar.tsx';
-import { HeroInquiry } from './components/HeroInquiry.tsx';
-import { QuestionsExplorer } from './components/QuestionsExplorer.tsx';
-import { HiddenAssumptionsLab } from './components/HiddenAssumptionsLab.tsx';
-import { MajorPositionsMatrix } from './components/MajorPositionsMatrix.tsx';
-import { ThoughtExperiments } from './components/ThoughtExperiments.tsx';
-import { DialecticWorkbench } from './components/DialecticWorkbench.tsx';
-import { SocraticCompass } from './components/SocraticCompass.tsx';
+import { QuestionAperture } from './components/QuestionAperture.tsx';
+import { QuestionAtlasView } from './components/QuestionAtlasView.tsx';
+import { TopologicalGraphCanvas } from './components/TopologicalGraphCanvas.tsx';
+import { RootReductionsView } from './components/RootReductionsView.tsx';
+import { AssumptionStackLab } from './components/AssumptionStackLab.tsx';
+import { SearchModal } from './components/SearchModal.tsx';
 import { Footer } from './components/Footer.tsx';
 
 export default function App() {
-  const [activeSection, setActiveSection] = useState('overview');
-  const [compassOpen, setCompassOpen] = useState(false);
-  const [workbenchQuery, setWorkbenchQuery] = useState('Why am I here?');
+  const [activeSection, setActiveSection] = useState('aperture');
+  const [currentQuestion, setCurrentQuestion] = useState<QuestionNode>(ATLAS_QUESTIONS[0]);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [selectedRootId, setSelectedRootId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('compass') === '1') {
-      setCompassOpen(true);
+    const qParam = params.get('q');
+    if (qParam) {
+      const match = findAtlasQuestion(qParam);
+      setCurrentQuestion(match);
     }
   }, []);
 
   const handleNavigate = (sectionId: string) => {
     setActiveSection(sectionId);
-    if (sectionId === 'overview') {
+    if (sectionId === 'aperture') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -38,48 +42,64 @@ export default function App() {
     }
   };
 
-  const handleSelectQuestionForWorkbench = (questionText: string) => {
-    setWorkbenchQuery(questionText);
-    const workbenchEl = document.getElementById('workbench');
-    if (workbenchEl) {
-      workbenchEl.scrollIntoView({ behavior: 'smooth' });
-    }
+  const handleSelectQuestion = (q: QuestionNode) => {
+    setCurrentQuestion(q);
+    handleNavigate('aperture');
+  };
+
+  const handleSearchQuery = (queryText: string) => {
+    const match = findAtlasQuestion(queryText);
+    setCurrentQuestion(match);
+    handleNavigate('atlas-view');
+  };
+
+  const handleSelectRoot = (rootId: string) => {
+    setSelectedRootId(rootId);
+    handleNavigate('root-knots');
   };
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-[#FBF9F5] text-stone-900 selection:bg-amber-100">
+    <div className="min-h-screen flex flex-col font-sans bg-[#FBF9F5] text-stone-900 selection:bg-amber-100 selection:text-stone-900">
       <Navbar
         activeSection={activeSection}
         onNavigate={handleNavigate}
-        onOpenCompass={() => setCompassOpen(true)}
+        onOpenSearch={() => setSearchModalOpen(true)}
       />
 
       <main className="flex-1">
-        <div id="overview">
-          <HeroInquiry
-            onSelectQuestion={handleSelectQuestionForWorkbench}
-            onExploreAssumptions={() => handleNavigate('assumptions')}
-          />
-        </div>
-
-        <QuestionsExplorer
-          onSelectForWorkbench={handleSelectQuestionForWorkbench}
+        <QuestionAperture
+          currentQuestion={currentQuestion}
+          onSelectQuestion={handleSelectQuestion}
+          onSearchQuery={handleSearchQuery}
+          onExploreGraph={() => handleNavigate('graph-canvas')}
         />
 
-        <HiddenAssumptionsLab />
+        <QuestionAtlasView
+          question={currentQuestion}
+          onSelectNeighbor={handleSearchQuery}
+          onSelectRoot={handleSelectRoot}
+        />
 
-        <MajorPositionsMatrix />
+        <TopologicalGraphCanvas
+          currentQuestion={currentQuestion}
+          onSelectQuestion={handleSelectQuestion}
+          onSelectRoot={handleSelectRoot}
+        />
 
-        <ThoughtExperiments />
+        <RootReductionsView
+          onSelectQuestion={handleSelectQuestion}
+          selectedRootId={selectedRootId}
+        />
 
-        <DialecticWorkbench initialQuery={workbenchQuery} />
+        <AssumptionStackLab />
       </main>
 
       <Footer />
 
-      <SocraticCompass
-        isOpen={compassOpen}
-        onClose={() => setCompassOpen(false)}
+      <SearchModal
+        isOpen={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+        onSelectQuestion={handleSelectQuestion}
       />
     </div>
   );
