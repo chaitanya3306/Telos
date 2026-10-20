@@ -4,35 +4,35 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ATLAS_QUESTIONS, QuestionNode } from './data/questionAtlasData.ts';
-import { findAtlasQuestion } from './utils/philosophyLogic.ts';
+import { CURIOSITY_INQUIRIES, InquiryNode } from './data/telosV2Data.ts';
+import { findInquiryNode } from './utils/philosophyLogic.ts';
 import { Navbar } from './components/Navbar.tsx';
-import { QuestionAperture } from './components/QuestionAperture.tsx';
-import { QuestionAtlasView } from './components/QuestionAtlasView.tsx';
-import { TopologicalGraphCanvas } from './components/TopologicalGraphCanvas.tsx';
-import { RootReductionsView } from './components/RootReductionsView.tsx';
-import { AssumptionStackLab } from './components/AssumptionStackLab.tsx';
-import { SearchModal } from './components/SearchModal.tsx';
+import { ProvocativeLandingHero } from './components/ProvocativeLandingHero.tsx';
+import { QuestionGraphModule } from './components/QuestionGraphModule.tsx';
+import { WhyQuestionMatters } from './components/WhyQuestionMatters.tsx';
+import { QuestionEvolution } from './components/QuestionEvolution.tsx';
+import { HumanityCuriosityMap } from './components/HumanityCuriosityMap.tsx';
+import { VisionManifesto } from './components/VisionManifesto.tsx';
+import { SocraticReflectionModal } from './components/SocraticReflectionModal.tsx';
 import { Footer } from './components/Footer.tsx';
 
 export default function App() {
-  const [activeSection, setActiveSection] = useState('aperture');
-  const [currentQuestion, setCurrentQuestion] = useState<QuestionNode>(ATLAS_QUESTIONS[0]);
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const [selectedRootId, setSelectedRootId] = useState<string | undefined>(undefined);
+  const [activeSection, setActiveSection] = useState('hero');
+  const [currentInquiry, setCurrentInquiry] = useState<InquiryNode>(CURIOSITY_INQUIRIES[0]);
+  const [reflectionModalOpen, setReflectionModalOpen] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const qParam = params.get('q');
     if (qParam) {
-      const match = findAtlasQuestion(qParam);
-      setCurrentQuestion(match);
+      const match = findInquiryNode(qParam);
+      setCurrentInquiry(match);
     }
   }, []);
 
   const handleNavigate = (sectionId: string) => {
     setActiveSection(sectionId);
-    if (sectionId === 'aperture') {
+    if (sectionId === 'hero') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -42,20 +42,15 @@ export default function App() {
     }
   };
 
-  const handleSelectQuestion = (q: QuestionNode) => {
-    setCurrentQuestion(q);
-    handleNavigate('aperture');
+  const handleSelectInquiryByText = (text: string) => {
+    const match = findInquiryNode(text);
+    setCurrentInquiry(match);
+    handleNavigate('question-graph');
   };
 
-  const handleSearchQuery = (queryText: string) => {
-    const match = findAtlasQuestion(queryText);
-    setCurrentQuestion(match);
-    handleNavigate('atlas-view');
-  };
-
-  const handleSelectRoot = (rootId: string) => {
-    setSelectedRootId(rootId);
-    handleNavigate('root-knots');
+  const handleSelectInquiryNode = (node: InquiryNode) => {
+    setCurrentInquiry(node);
+    handleNavigate('question-graph');
   };
 
   return (
@@ -63,43 +58,48 @@ export default function App() {
       <Navbar
         activeSection={activeSection}
         onNavigate={handleNavigate}
-        onOpenSearch={() => setSearchModalOpen(true)}
+        onOpenReflection={() => setReflectionModalOpen(true)}
       />
 
       <main className="flex-1">
-        <QuestionAperture
-          currentQuestion={currentQuestion}
-          onSelectQuestion={handleSelectQuestion}
-          onSearchQuery={handleSearchQuery}
-          onExploreGraph={() => handleNavigate('graph-canvas')}
+        <ProvocativeLandingHero
+          onSelectInquiry={handleSelectInquiryByText}
+          onExploreCuriosityMap={() => handleNavigate('curiosity-map')}
+          onBeginReflection={() => setReflectionModalOpen(true)}
         />
 
-        <QuestionAtlasView
-          question={currentQuestion}
-          onSelectNeighbor={handleSearchQuery}
-          onSelectRoot={handleSelectRoot}
+        <QuestionGraphModule
+          inquiry={currentInquiry}
+          onSelectNeighbor={handleSelectInquiryByText}
+          onSelectRelated={handleSelectInquiryByText}
         />
 
-        <TopologicalGraphCanvas
-          currentQuestion={currentQuestion}
-          onSelectQuestion={handleSelectQuestion}
-          onSelectRoot={handleSelectRoot}
+        <WhyQuestionMatters
+          inquiry={currentInquiry}
+          onSelectConnectedQuestion={handleSelectInquiryByText}
         />
 
-        <RootReductionsView
-          onSelectQuestion={handleSelectQuestion}
-          selectedRootId={selectedRootId}
+        <QuestionEvolution
+          inquiry={currentInquiry}
+          onSelectEvolutionQuestion={handleSelectInquiryByText}
         />
 
-        <AssumptionStackLab />
+        <HumanityCuriosityMap
+          currentInquiryId={currentInquiry.id}
+          onSelectInquiry={handleSelectInquiryNode}
+        />
+
+        <VisionManifesto
+          onSelectInquiry={handleSelectInquiryByText}
+          onOpenReflection={() => setReflectionModalOpen(true)}
+        />
       </main>
 
       <Footer />
 
-      <SearchModal
-        isOpen={searchModalOpen}
-        onClose={() => setSearchModalOpen(false)}
-        onSelectQuestion={handleSelectQuestion}
+      <SocraticReflectionModal
+        isOpen={reflectionModalOpen}
+        onClose={() => setReflectionModalOpen(false)}
       />
     </div>
   );

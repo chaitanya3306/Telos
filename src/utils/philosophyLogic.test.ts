@@ -1,53 +1,42 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  findAtlasQuestion,
-  searchAtlas,
-  simulatePremiseInversion,
-  calculateTopologicalProximity,
-  getAllRootKnots
+  findInquiryNode,
+  searchCuriosityInquiries,
+  getQuestionEvolution,
+  simulateAssumptionStance
 } from './philosophyLogic.ts';
-import { ATLAS_QUESTIONS } from '../data/questionAtlasData.ts';
+import { CURIOSITY_INQUIRIES } from '../data/telosV2Data.ts';
 
-test('findAtlasQuestion correctly matches "Why do humans exist?"', () => {
-  const result = findAtlasQuestion('Why do humans exist?');
+test('findInquiryNode correctly matches "Why do humans exist?"', () => {
+  const result = findInquiryNode('Why do humans exist?');
   assert.equal(result.id, 'why-do-humans-exist');
-  assert.equal(result.interrogativeOperator, 'why');
-  assert.ok(result.sharedAssumptions.length >= 2);
-  assert.ok(result.rootQuestionCandidates.length >= 1);
+  assert.equal(result.relatedQuestions.length, 4);
+  assert.equal(result.sharedAssumptions.length, 2);
+  assert.ok(result.philosophicalClusters.length >= 4);
 });
 
-test('findAtlasQuestion matches "Can AI become conscious?"', () => {
-  const result = findAtlasQuestion('Can AI become conscious?');
-  assert.equal(result.id, 'can-ai-become-conscious');
-  assert.equal(result.interrogativeOperator, 'can');
+test('findInquiryNode matches "What is consciousness?"', () => {
+  const result = findInquiryNode('What is consciousness?');
+  assert.equal(result.id, 'what-is-consciousness');
+  assert.equal(result.category, 'Consciousness');
 });
 
-test('simulatePremiseInversion returns diverging consequences for ACCEPTED vs REJECTED', () => {
-  const question = ATLAS_QUESTIONS[0];
-  const accepted = simulatePremiseInversion(question, 'asm-existential-teleology', true);
-  const rejected = simulatePremiseInversion(question, 'asm-existential-teleology', false);
-
-  assert.equal(accepted.state, 'ACCEPTED');
-  assert.equal(rejected.state, 'REJECTED');
-  assert.notEqual(accepted.immediateConsequence, rejected.immediateConsequence);
-  assert.match(accepted.immediateConsequence, /assignment|purpose/i);
-  assert.match(rejected.immediateConsequence, /template|facticity/i);
+test('getQuestionEvolution returns step-by-step genealogical pipeline', () => {
+  const evolution = getQuestionEvolution('what-is-consciousness');
+  assert.equal(evolution.steps.length, 4);
+  assert.equal(evolution.steps[0].question, 'What is consciousness?');
+  assert.equal(evolution.steps[1].question, 'What is the self?');
+  assert.equal(evolution.steps[2].question, 'What is identity across time?');
+  assert.equal(evolution.steps[3].question, 'What survives change and death?');
 });
 
-test('calculateTopologicalProximity scores related inquiries higher than distant ones', () => {
-  const qHumans = ATLAS_QUESTIONS[0]; // why-do-humans-exist
-  const qLife = ATLAS_QUESTIONS[3]; // why-does-life-want-to-survive
-  const qAi = ATLAS_QUESTIONS[4]; // can-ai-become-conscious
+test('simulateAssumptionStance gives distinct consequences for accepted vs rejected', () => {
+  const node = CURIOSITY_INQUIRIES[0];
+  const accepted = simulateAssumptionStance(node, 'asm-purpose-exists', true);
+  const rejected = simulateAssumptionStance(node, 'asm-purpose-exists', false);
 
-  const proxHumansLife = calculateTopologicalProximity(qHumans, qLife);
-  assert.ok(proxHumansLife > 0.4, 'Teleological human and life survival inquiries should have high proximity');
-});
-
-test('getAllRootKnots returns foundational reduction knots', () => {
-  const roots = getAllRootKnots();
-  assert.ok(roots.length >= 4);
-  const orderKnot = roots.find(r => r.id === 'root-order-entropy');
-  assert.ok(orderKnot);
-  assert.match(orderKnot.title, /Order Knot/);
+  assert.equal(accepted.stance, 'ACCEPTED');
+  assert.equal(rejected.stance, 'REJECTED');
+  assert.notEqual(accepted.consequence, rejected.consequence);
 });
