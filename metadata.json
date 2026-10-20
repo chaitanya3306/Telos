@@ -1,0 +1,6 @@
+{
+  "name": "Telos — Cartography of Meaning & Purpose",
+  "description": "An interactive philosophical observatory deconstructing the foundational questions of existence, hidden assumptions, and major worldviews.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
